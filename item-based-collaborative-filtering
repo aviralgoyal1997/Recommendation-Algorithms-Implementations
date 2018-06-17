@@ -1,0 +1,385 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ratings=pd.read_csv('ratings.csv',names=['user-id','movie-id','rating','aswq'])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ratings"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "first column in rating dataframe is user id and second column is movie id and 3rd column is rating given by user to that item.We won't be needing 4th column.So,remove that "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ratings.drop(['aswq'],inplace=True,axis=1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ratings.head(5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(max(ratings['user-id']))\n",
+    "print(max(ratings['movie-id']))\n",
+    "user_length=max(ratings['user-id'])\n",
+    "total_items=(max(ratings['movie-id']))\n",
+    "#total no of users and items "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "now first we need to make matrix reresentation of the user-item ratings"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "matrix=np.zeros((user_length,total_items))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "matrix.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for i in range(len(ratings)):\n",
+    "    matrix[ratings.iloc[i]['user-id']-1][ratings.iloc[i]['movie-id']-1]=ratings.iloc[i]['rating']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "matrix[4552][160]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Hence Now we hav our matrix ready,rating by ith user of jth item is matrix[i-1][j-1]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now we need to find similarity matrix which we can get by jaccard simlarity or cosine similarity or pearson coefficience similarity."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#user-user similarity  matrix\n",
+    "sim_item_jaccard=np.zeros((total_items,total_items)) \n",
+    "sim_item_cosine=np.zeros((total_items,total_items))\n",
+    "sim_item_pearson=np.zeros((total_items,total_items))\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Jaccard Similarity : \n",
+    "A = {set of movie ids rated by user1 }\n",
+    "B = {set of movie ids rated by user2 }\n",
+    "\n",
+    "similarity= intersection(A,B)/union(A,B) i.e. (common movies rated by both ofthem/total movies rated by any of them)\n",
+    "\n",
+    "example : A= {3,5,8,12}\n",
+    "          B= {3,4,13,23}\n",
+    "intersection(A,B) = {3}\n",
+    "union(A,B) = {3,4,5,8,12,13,23}\n",
+    "sim = 1/7 \n",
+    "\n",
+    "Cosine Similarity :\n",
+    "\n",
+    "In this we will consider every item not only ones which rated by both of them.In cases when one item rated by user1 and not by user2 then rating by user2 will be assumed 0 so its effect in numerator will be zero but in denominator it will be included in squareroot of summation of squares of user1 ratings.\n",
+    "\n",
+    "Adjusted Cosine Similarity :\n",
+    "\n",
+    "same as pearson coefficient but here we will  using only items rated by both to calculate mean rating while in pearson we use all ratings by user to calculate mean.\n",
+    "\n",
+    "Reference : http://cs.carleton.edu/cs_comps/0607/recommend/recommender/itembased.html\n",
+    "            \n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import scipy.stats\n",
+    "import scipy.spatial\n",
+    "for item1 in range(total_items):\n",
+    "    print (item1)\n",
+    "    for item2 in range(total_items):\n",
+    "\n",
+    "        if np.count_nonzero(matrix[:,item1]) and np.count_nonzero(matrix[:,item2]):\n",
+    "\n",
+    "            sim_item_cosine[item1][item2] = 1-scipy.spatial.distance.cosine(matrix[:,item1],matrix[:,item2])\n",
+    "\n",
+    "            sim_item_jaccard[item1][item2] = 1-scipy.spatial.distance.jaccard(matrix[:,item1],matrix[:,item2])\n",
+    "\n",
+    "            try:\n",
+    "\n",
+    "                if not math.isnan(scipy.stats.pearsonr(matrix[:,item1],matrix[:,item2])[0]):\n",
+    "\n",
+    "                    sim_item_pearson[item1][item2] = scipy.stats.pearsonr(matrix[:,item1],matrix[:,item2])[0]\n",
+    "\n",
+    "                else:\n",
+    "\n",
+    "                    sim_item_pearson[item1][item2] = 0\n",
+    "\n",
+    "            except:\n",
+    "                    sim_item_pearson[item1][item2] = 0"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "len(ratings)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "So now we have our similarity matrices for items.We can do cross validation checkig too by dividing ito trainig set and test set"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Performing kfold cross validation on this matrix\n",
+    "from sklearn.cross_validation import KFold\n",
+    "import random\n",
+    "from sklearn.metrics import mean_squared_error\n",
+    "from math import sqrt\n",
+    "import math\n",
+    "k_fold = KFold(n=len(ratings), n_folds=10)\n",
+    "rmse_cosine = []\n",
+    "rmse_jaccard = []\n",
+    "rmse_pearson = []\n",
+    "\n",
+    "for train_indices, test_indices in k_fold: #Those 8 lakh ratings divided into train set and test set\n",
+    "    train = [ratings.iloc[i] for i in train_indices] #training data\n",
+    "    test = [ratings.iloc[i] for i in test_indices]  #test set\n",
+    "    M=np.zeros((user_length,total_items))\n",
+    "    for e in train: #here e is a tuple with user-id,itemid,rating so\n",
+    "        M[e[0]-1][e[1]-1]=e[2]\n",
+    "        \n",
+    "    true_rate=[]\n",
+    "    pred_rate_cosine=[]\n",
+    "    pred_rate_jaccard=[]\n",
+    "    pred_rate_pearson=[]\n",
+    "    for e in test:\n",
+    "        user=e[0]\n",
+    "        item=e[1]\n",
+    "        true_rate.append(e[2])\n",
+    "        pred_cosine=3.0\n",
+    "        pred_jaccard=3.0\n",
+    "        pred_pearson=3.0\n",
+    "        if(np.count_nonzero(M[:,item-1])): #if this item is rated by anyone or not as only then we can get similarity of this item with others\n",
+    "            sim_cosine=sim_item_cosine[item-1] #Similarities of item with other items \n",
+    "            sim_jaccard=sim_item_jaccard[item-1]\n",
+    "            sim_pearson=sim_item_pearson[item-1]\n",
+    "            ind=(M[user-1]>0)#if rating given by present user to other items or not,array of true and false\n",
+    "            normal_cosine = np.sum(np.absolute(sim_cosine[ind]))#sum of similarities with items which are rated by our user. .\n",
+    "            normal_jaccard = np.sum(np.absolute(sim_jaccard[ind]))\n",
+    "            normal_pearson = np.sum(np.absolute(sim_pearson[ind]))\n",
+    "            if (normal_cosine>0):\n",
+    "                                                \n",
+    "                                pred_cosine=np.dot(sim_cosine,M[user-1])/normal_cosine\n",
+    "                                \n",
+    "                                                \n",
+    "                                                \n",
+    "            if (normal_jaccard>0):                                    \n",
+    "                                                \n",
+    "                                pred_jaccard=np.dot(sim_jaccard,M[user-1])/normal_jaccard\n",
+    "                                                \n",
+    "            if (normal_pearson>0):                                    \n",
+    "                                                \n",
+    "                                pred_pearson=np.dot(sim_pearson,M[user-1])/normal_pearson\n",
+    "                                                                                    \n",
+    "        if pred_cosine < 0:\n",
+    "             pred_cosine = 0\n",
+    "                                                \n",
+    "        if pred_pearson < 0:\n",
+    "             pred_pearson = 0               \n",
+    "        if pred_cosine > 5:\n",
+    "             pred_cosine = 5\n",
+    "        if pred_jaccard < 0:\n",
+    "             pred_jaccard = 0\n",
+    "        if pred_jaccard > 5:\n",
+    "             pred_jaccard = 5\n",
+    "        if pred_pearson > 5:\n",
+    "             pred_pearson = 5 \n",
+    "        \n",
+    "        print (str(user) + \"\\t\" + str(item) + \"\\t\" + str(e[2]) + \"\\t\" + str(pred_cosine) + \"\\t\" + str(pred_jaccard) + \"\\t\" + str(pred_pearson))\n",
+    "        pred_rate_cosine.append(pred_cosine)#After end of this loop this array will be having all predictios with cosine similarity\n",
+    "        pred_rate_jaccard.append(pred_jaccard)#After end of this loop this array will be having all predictios with jaccard similarit\n",
+    "        pred_rate_pearson.append(pred_pearson)  #After end of this loop this array will be having all predictios with pearson similarity\n",
+    "    rmse_cosine.append(sqrt(mean_squared_error(true_rate, pred_rate_cosine)))#using array of predictions now find mean square errors\n",
+    "    rmse_jaccard.append(sqrt(mean_squared_error(true_rate, pred_rate_jaccard)))\n",
+    "    rmse_pearson.append(sqrt(mean_squared_error(true_rate, pred_rate_pearson)))\n",
+    "\n",
+    "    print (str(sqrt(mean_squared_error(true_rate, pred_rate_cosine))) + \"\\t\" + str(sqrt(mean_squared_error(true_rate, pred_rate_jaccard))) + \"\\t\" + str(sqrt(mean_squared_error(true_rate, pred_rate_pearson))))\n",
+    "\n",
+    "rmse_cosine = sum(rmse_cosine) / float(len(rmse_cosine))#as its k fold so we will be having multiple rmse one for each fold now we will combine that.\n",
+    "rmse_pearson = sum(rmse_pearson) / float(len(rmse_pearson))\n",
+    "rmse_jaccard = sum(rmse_jaccard) / float(len(rmse_jaccard))\n",
+    "\n",
+    "print (str(rmse_cosine) + \"\\t\" + str(rmse_jaccard) + \"\\t\" + str(rmse_pearson))\n",
+    "\n",
+    "\n",
+    "        "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Hence now we have implemented k-fold cross validation and found out pretty small RMSE using all type of similarities.\n",
+    "Now we gonna write a function to input userid and item id and it will outpit rating.\n",
+    "\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def predict_rating(userid,itemid):\n",
+    "    if np.count_nonzero(matrix[:,itemid-1]):\n",
+    "        simi_cosine=sim_item_cosine[itemid-1]#similarities of input item\n",
+    "        indices=(matrix[userid-1]>0) #items rate by this user\n",
+    "        normal_cosin=np.sum(np.abs(simi_cosine[indices]))#sum of similarities with items which were rated by this user\n",
+    "        prediction=np.dot(simi_cosine,matrix[userid-1])/normal_cosin #dot product of ratings and similarities divided by ormal_cosine\n",
+    "        if (prediction>5):\n",
+    "            prediction=5\n",
+    "        if(prediction<0):\n",
+    "            predictio=0\n",
+    "    return prediction\n",
+    "# we could also use jaccard and pearson similarity for this too,just need to change some terms."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "predict_rating(1940,1928)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "(matrix[1940][1928])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.5.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
