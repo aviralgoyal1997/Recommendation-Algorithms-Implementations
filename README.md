@@ -21,8 +21,8 @@ else:
 						          pred_cosine = item_pred_cosine
 					       else:
 						          pred_cosine = 3.0
-			   	else:
+			   	   else:
 					       if (user_pred_cosine != 0 and user_pred_cosine != 5):
 						         pred_cosine = user_pred_cosine
 					       else:
-                pred_cosine = 3.0
+                                                   pred_cosine = 3.0
