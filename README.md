@@ -12,17 +12,4 @@ Because of size issues could not upload code with outputs run so you can see out
 While making content based recommender approach will be mostly same but now similarity for users and items will not be calculated using their rating but using their own featurs like genres for items and gender or other for users.After this when we have similarity matrix for both users and items we gonna use same approach as before to calculate rating but little changes as now there will be two ratings one from item similarity matrics and one from user similarity matric so we need touse both of them to get one final rating for an item.<br>
 <b>Combining user based and item based ratings to get one rating</b><br>
 
-
-if (user_pred_cosine != 0 and user_pred_cosine != 5) and (item_pred_cosine != 0 and item_pred_cosine != 5):
-				   pred_cosine = (user_pred_cosine + item_pred_cosine)/2
-else:
-				   if (user_pred_cosine == 0 or user_pred_cosine == 5):
-					       if (item_pred_cosine != 0 and item_pred_cosine != 5):
-						          pred_cosine = item_pred_cosine
-					       else:
-						          pred_cosine = 3.0
-			   	   else:
-					       if (user_pred_cosine != 0 and user_pred_cosine != 5):
-						         pred_cosine = user_pred_cosine
-					       else:
-                                                   pred_cosine = 3.0
+!(https://drive.google.com/open?id=1gSsrBmBVnuNSJJz9N8vKyzAZcMFhV5eS)
