@@ -9,8 +9,8 @@ Because of size issues could not upload code with outputs run so you can see out
 <href>https://drive.google.com/open?id=1ycG_NYX3NtALW7cI6NQ7MyBHz64c6izp</href>
 
 <h3>Making hybrid content based recommendation system</h3>
-While making content based recommender approach will be mostly same but now similarity for users and items will not be calculated using their rating but using their own featurs like genres for items and gender or other for users.After this when we have similarity matrix for both users and items we gonna use same approach as before to calculate rating but little changes as now there will be two ratings one from item similarity matrics and one from user similarity matric so we need touse both of them to get one final rating for an item.
-<b>Combining user based and item based ratings to get one rating
+While making content based recommender approach will be mostly same but now similarity for users and items will not be calculated using their rating but using their own featurs like genres for items and gender or other for users.After this when we have similarity matrix for both users and items we gonna use same approach as before to calculate rating but little changes as now there will be two ratings one from item similarity matrics and one from user similarity matric so we need touse both of them to get one final rating for an item.<br>
+<b>Combining user based and item based ratings to get one rating</b><br>
 
 
 if (user_pred_cosine != 0 and user_pred_cosine != 5) and (item_pred_cosine != 0 and item_pred_cosine != 5):
